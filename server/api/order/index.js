@@ -7,7 +7,7 @@ const Router = express.Router();
 /**
  * Route   /
  * des      Get all orders by user id.
- * params   _id
+ * params   none
  * Acess    private
  * Method   GET
  */
@@ -28,6 +28,43 @@ Router.get(
             return res.status(500).json({ error: error.message });
         }
     }
-    )
+    );
+/**
+ * Route   /new
+ * des      Add new order
+ * params   none
+ * Acess    private
+ * Method   POST or PUT
+ */
+Router.put(
+    "/new/",  
+     passport.authenticate("jwt", { session: false}),
+    async (req, res) => {
+        try{
+            const { user } = req;
 
+            const { orderDetails } = req.body;
+
+            console.log(user);
+            const addNewOrder = await OrderModel.findOneAndUpdate(
+                {
+                    user: user._id,
+                },
+                {
+                    $push: {
+                        ordersDetails: orderDetails,
+                    },
+                },
+                {
+                    new: true,
+                }
+            );
+
+            return res.json({ order: addNewOrder });
+
+        }catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+)
 export default Router;
