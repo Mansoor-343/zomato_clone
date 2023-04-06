@@ -1,25 +1,37 @@
 import express from "express";
 
 import { RestaurantModel } from "../../database/allModels";
+import { ValidateRestaurantCity, ValidateSearchString } from "../../validation/restaurant.validation";
 
 const Router = express.Router();
+/**
+ * Route    /
+ * Des      Create new restaurant
+ * params   none
+ * aceess   Public
+ * Method   POST
+ */
+
 
 /**
  * Route    /
  * Des      GEt all the restaurant details based on the city
  * params   none
  * aceess   Public
- * Method   POST
+ * Method   GET
  */
-Router.post("/", async (req, res) => {
+Router.get("/", async (req, res) => {
     try {
         //http://localhost:4000/restaurant/?city=pdl
         const { city } = req.query;
-        const restaurant = await RestaurantModel.find({ city });
+
+        await ValidateRestaurantCity(req.query);
+        
+        const restaurants = await RestaurantModel.find({ city });
         if (restaurants.length ===0){
-            return res.json({ error: "No  restaurant found in this city."});
+            return res.status(404).json({ error: "No  restaurant found in this city."});
         }
-        return res,json({ restaurant});
+        return res.json({ restaurants});
     }catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -30,9 +42,9 @@ Router.post("/", async (req, res) => {
  * Des      GEt individual  restaurant details based on the id
  * params   _id
  * aceess   Public
- * Method   POST
+ * Method   GET
  */
-Router.post("/", async (req, res) => {
+Router.get("/:_id", async (req, res) => {
     try {
        const { _id } = req.params;
        const restaurant = await RestaurantModel.findById(_id);
@@ -52,9 +64,9 @@ Router.post("/", async (req, res) => {
  * Des      GEt   restaurant details based on Search String
  * params   SearchString
  * aceess   Public
- * Method   POST
+ * Method   GET
  */
-Router.post("/search/:searchString", async (req, res) => {
+Router.get("/search/:searchString", async (req, res) => {
     /**
      * searching = raj
      * rsults = {
@@ -65,6 +77,7 @@ Router.post("/search/:searchString", async (req, res) => {
      */
     try {
        const { SearchString } = req.params;
+       await ValidateSearchString(req.params);
        const restaurants = await RestaurantModel.find({
         name: { $regex: SearchString, $options: "i"},
        });

@@ -62,6 +62,8 @@ async (req, res ) => {
         const {_id } = req.params;
         const { userData } = req.body;
 
+        // Task : validate User data
+
         userData.password = undefined;
 
         const UpdateUserData = await UserModel.findByIdAndUpdate(_id, {
